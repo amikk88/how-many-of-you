@@ -201,7 +201,7 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
     <div style="display:flex;flex-direction:column;gap:10px">
       <p class="eyebrow">Game ready</p>
       <h1 id="share-title"></h1>
-      <p class="lede">Send this link. Friends enter their name, make two guesses, and land on the leaderboard.</p>
+      <p class="lede">Send the link to friends, or play right here and pass your phone around.</p>
     </div>
     <div class="card">
       <input type="text" id="share-url" readonly aria-label="Game link">
@@ -211,6 +211,7 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
       </div>
       <p class="msg" id="copy-msg"></p>
     </div>
+    <button class="btn block" id="share-play" type="button">Play now on this phone</button>
     <div class="card">
       <p class="eyebrow">Your matchups</p>
       <div class="matchup"><b id="share-m1"></b><span class="msg" id="share-m1b"></span></div>
@@ -275,7 +276,8 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
       <div class="board" id="board"><div class="empty">Loading scores…</div></div>
     </div>
     <div class="spacer"></div>
-    <button class="btn accent block" id="res-new" type="button">Start a new game</button>
+    <button class="btn accent block" id="res-again" type="button">Another player</button>
+    <button class="btn ghost block" id="res-new" type="button">Start a new game</button>
   </section>
 </div>
 
@@ -458,7 +460,6 @@ async function api(path, opts = {}){
 }
 const enc = encodeURIComponent;
 const getGame = id => api(`games?id=eq.${enc(id)}&select=*`).then(r => r[0] || null);
-const getMyPlay = id => api(`plays?game_id=eq.${enc(id)}&player_id=eq.${enc(myId())}&select=*`).then(r => r[0] || null);
 const getBoard = id => api(`plays?game_id=eq.${enc(id)}&select=player,player_id,us,world,us_ok,world_ok,score,created_at&order=score.desc,created_at.asc&limit=200`);
 
 function newId(){
@@ -609,10 +610,23 @@ $("copy-btn").onclick = () => {
 };
 $("share-url").onfocus = e => e.target.select();
 $("share-board").onclick = () => openGame(shareId, {boardOnly:true});
+$("share-play").onclick = () => openGame(shareId, {play:true});
 $("share-new").onclick = () => startNew();
 
 /* ---------- PLAY ---------- */
-let game = null, gameId = null, round = 0, picks = {}, playerName = "";
+let game = null, gameId = null, round = 0, picks = {}, playerName = "", currentPid = null;
+// Several people can play on one phone: each play gets its own id, remembered per game on this device.
+function localPids(id){ try { return JSON.parse(store("hmoy-plays-" + id) || "[]"); } catch(e){ return []; } }
+function addLocalPid(id, pid){ const a = localPids(id).filter(x => x !== pid); a.push(pid); store("hmoy-plays-" + id, JSON.stringify(a.slice(-50))); }
+const getPlay = (id, pid) => api(`plays?game_id=eq.${enc(id)}&player_id=eq.${enc(pid)}&select=*`).then(r => r[0] || null);
+function showJoin(fresh){
+  $("join-title").textContent = `How many ${plural(game.name)} are out there?`;
+  $("player-input").value = fresh ? "" : (store("hmoy-player") || "");
+  $("join-btn").disabled = !$("player-input").value.trim();
+  $("join-msg").textContent = fresh ? "Pass the phone to the next player." : "";
+  show("join");
+  if (fresh) setTimeout(() => $("player-input").focus({preventScroll:true}), 50);
+}
 async function openGame(id, opts = {}){
   status("Loading game…", "");
   let g = null;
@@ -625,15 +639,14 @@ async function openGame(id, opts = {}){
   if (!g){ status("Game not found", "This link doesn't match a game. Ask the sender for a new link, or start your own.", true); return; }
   game = g; gameId = id;
   document.title = `How many ${plural(g.name)}?`;
-  if (opts.boardOnly){ showResults(null); return; }
-  let existing = null;
-  try { existing = await getMyPlay(id); } catch(e){}
-  if (existing){ playerName = existing.player; showResults(existing); return; }
-  $("join-title").textContent = `How many ${plural(g.name)} are out there?`;
-  $("player-input").value = store("hmoy-player") || "";
-  $("join-btn").disabled = !$("player-input").value.trim();
-  $("join-msg").textContent = "";
-  show("join");
+  if (opts.boardOnly){ currentPid = null; showResults(null); return; }
+  if (!opts.play){
+    const pids = localPids(id), last = pids.length ? pids[pids.length - 1] : myId();
+    let existing = null;
+    try { existing = await getPlay(id, last); } catch(e){}
+    if (existing){ currentPid = last; playerName = existing.player; showResults(existing); return; }
+  }
+  showJoin(false);
 }
 $("player-input").addEventListener("input", e => $("join-btn").disabled = !e.target.value.trim());
 $("join-form").addEventListener("submit", e => {
@@ -641,6 +654,7 @@ $("join-form").addEventListener("submit", e => {
   playerName = $("player-input").value.trim().slice(0, 24);
   if (!playerName) return;
   store("hmoy-player", playerName);
+  currentPid = myId() + "-" + Math.random().toString(36).slice(2, 8);
   round = 0; picks = {}; startRound();
 });
 
@@ -708,17 +722,18 @@ function scorePicks(){
 }
 $("next-btn").onclick = async () => {
   if (round === 0){ round = 1; startRound(); return; }
-  const local = {game_id: gameId, player_id: myId(), player: playerName, us: picks.us, world: picks.world};
+  const local = {game_id: gameId, player_id: currentPid, player: playerName, us: picks.us, world: picks.world};
   $("next-btn").disabled = true;
   let saved = null, ok = true;
   try {
     const r = await api("plays", {method:"POST", body: JSON.stringify(local), headers: {"Prefer":"return=representation"}});
     saved = r && r[0];
   } catch(e){
-    if (e.status === 409) { try { saved = await getMyPlay(gameId); } catch(_){} }
+    if (e.status === 409) { try { saved = await getPlay(gameId, currentPid); } catch(_){} }
     else ok = false;
   }
   $("next-btn").disabled = false;
+  if (ok) addLocalPid(gameId, currentPid);
   showResults(saved || {...local, ...scorePicks()}, ok);
 };
 
@@ -742,7 +757,9 @@ function showResults(play, saved = true){
     });
     $("res-msg").className = saved ? "msg" : "msg err";
     $("res-msg").textContent = saved ? "" : "Your score couldn't be saved to the leaderboard. Check your connection.";
+    $("res-again").textContent = "Another player";
   } else {
+    $("res-again").textContent = "Play this game";
     $("res-eyebrow").textContent = "Leaderboard";
     $("res-score").textContent = "";
     $("res-label").textContent = `How many ${plural(game.name)}?`;
@@ -766,7 +783,7 @@ function renderBoard(rows){
   let rank = 0, last = null;
   rows.forEach((p, i) => {
     if (p.score !== last){ rank = i + 1; last = p.score; }
-    const me = p.player_id === myId();
+    const me = !!currentPid && p.player_id === currentPid;
     const row = el("div", "row" + (me ? " me" : ""));
     const mid = el("div"); mid.style.minWidth = "0";
     mid.append(el("div", "who", p.player + (me ? " (you)" : "")));
@@ -793,6 +810,7 @@ function startNew(){
 $("brand").onclick = startNew;
 $("status-btn").onclick = startNew;
 $("res-new").onclick = startNew;
+$("res-again").onclick = () => { if (game) { const fresh = $("res-again").textContent === "Another player"; currentPid = null; showJoin(fresh); } };
 function route(){
   const id = gameIdFromUrl();
   if (id){
