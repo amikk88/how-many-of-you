@@ -25,6 +25,10 @@ create table if not exists public.plays (
   primary key (game_id, player_id)   -- one entry per player per game
 );
 
+-- Added later: which spellings a game counts (e.g. ["Sarah","Sara"]). Empty means exact spelling only.
+alter table public.games add column if not exists spellings jsonb
+  check (spellings is null or jsonb_typeof(spellings) = 'array');
+
 -- Scores are worked out by the database, so nobody can post a fake score.
 create or replace function public.score_play() returns trigger
 language plpgsql security definer set search_path = public as $$
