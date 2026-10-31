@@ -149,7 +149,11 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
 .sugs:empty{display:none}
 .chip{font:inherit;font-size:15px;font-weight:600;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .sharerow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-:root{--knob:#FFFFFF}
+:root{--knob:#FFFFFF;--good-ink:#FFFFFF}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--good-ink:#0B0D10}}
+:root[data-theme="dark"]{--good-ink:#0B0D10}
+.btn.good{background:var(--good);color:var(--good-ink)}
+#res-share-msg{text-align:center;word-break:break-all}
 .toggle{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--r);padding:12px 14px;cursor:pointer;position:relative}
 .toggle .tg-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .toggle .tg-text b{font-weight:600}
@@ -294,8 +298,12 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
       <div class="board" id="board"><div class="empty">Loading scores…</div></div>
     </div>
     <div class="spacer"></div>
-    <button class="btn accent block" id="res-again" type="button">Another player</button>
-    <button class="btn ghost block" id="res-new" type="button">Start a new game</button>
+    <div class="sharerow">
+      <button class="btn accent" id="res-share" type="button">Share link</button>
+      <button class="btn accent" id="res-again" type="button">Another player</button>
+    </div>
+    <p class="msg" id="res-share-msg" hidden></p>
+    <button class="btn good block" id="res-new" type="button">Start a new game</button>
   </section>
   <p class="foot" id="spell-note" hidden></p>
 </div>
@@ -806,6 +814,7 @@ function pickLabel(side, which){
 }
 function showResults(play, saved = true){
   const ans = $("res-answers"); ans.innerHTML = "";
+  $("res-share-msg").hidden = true;
   if (play){
     $("res-eyebrow").textContent = playerName ? playerName + ", your score" : "Your score";
     $("res-score").textContent = play.score + "/2";
@@ -870,6 +879,18 @@ function startNew(){
 $("brand").onclick = startNew;
 $("status-btn").onclick = startNew;
 $("res-new").onclick = startNew;
+$("res-share").onclick = async () => {
+  if (!game) return;
+  const url = gameLink(gameId, game.name), msg = $("res-share-msg");
+  const text = `How many ${plural(game.name)} are there? Take a guess:`;
+  if (navigator.share){
+    try { await navigator.share({title: `How many ${plural(game.name)}?`, text, url}); return; }
+    catch(e){ if (e && e.name === "AbortError") return; }
+  }
+  try { await navigator.clipboard.writeText(text + " " + url); msg.textContent = "Link copied. Paste it into a message."; }
+  catch(e){ msg.textContent = url; }
+  msg.hidden = false;
+};
 $("res-again").onclick = () => { if (game) { const fresh = $("res-again").textContent === "Another player"; currentPid = null; showJoin(fresh); } };
 function route(){
   const id = gameIdFromUrl();
