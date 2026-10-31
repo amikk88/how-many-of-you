@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/:slug(how-many-[a-z0-9-]+)", "destination": "/api/play?slug=:slug" }
+  ],
+  "functions": {
+    "api/play.js": { "includeFiles": "index.html" }
+  }
+}

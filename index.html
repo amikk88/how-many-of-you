@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Many of You?</title>
+<meta name="description" content="Is your first name more common than a city, state or country? Make a matchup, send the link, see who guesses right.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="How Many of You?">
+<meta property="og:title" content="How Many of You?">
+<meta property="og:description" content="Is your first name more common than a city, state or country? Make a matchup, send the link, see who guesses right.">
+<meta property="og:image" content="/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F4F5F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0F12" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="How Many?">
+<link rel="icon" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
+<style>*,*::before,*::after{box-sizing:border-box}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<style>
+/* Layout: one narrow phone column, one task per screen, big tap targets; numbers are the hero. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --ink:#111318; --muted:#646B77; --line:#E2E5EA; --chip:#ECEEF2;
+  --accent:#1D4ED8; --accent-ink:#FFFFFF;
+  --good:#127A50; --good-bg:#E4F3EB; --bad:#BF3328; --bad-bg:#FBE9E7;
+  --display:"Bricolage Grotesque", ui-rounded, -apple-system, "SF Pro Display", "Segoe UI", sans-serif;
+  --body:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D0F12; --surface:#171A1F; --ink:#F2F4F7; --muted:#9BA2AE; --line:#2A2F37; --chip:#22262D;
+  --accent:#7C9BFF; --accent-ink:#0B0D10;
+  --good:#45C98F; --good-bg:#13281E; --bad:#FF7468; --bad-bg:#2E1614; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0D0F12; --surface:#171A1F; --ink:#F2F4F7; --muted:#9BA2AE; --line:#2A2F37; --chip:#22262D;
+  --accent:#7C9BFF; --accent-ink:#0B0D10;
+  --good:#45C98F; --good-bg:#13281E; --bad:#FF7468; --bad-bg:#2E1614; color-scheme:dark;}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+.app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 32px}
+.top{display:flex;align-items:center;justify-content:space-between;padding-block:4px 18px}
+.brand{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--ink);padding:0;cursor:pointer}
+.brand i{display:inline-block;width:18px;height:18px;border-radius:50%;background:conic-gradient(var(--accent) 0 62%, var(--chip) 62% 100%)}
+.top small{color:var(--muted);font-size:13px}
+section.view{display:flex;flex-direction:column;gap:18px;flex:1}
+h1{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.05;letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.015em;margin:0;text-wrap:balance}
+p{margin:0}
+.lede{color:var(--muted);font-size:16px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.field{display:flex;gap:8px}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:18px;padding:14px 16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);color:var(--ink);outline:none}
+input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent)}
+.btn{font:inherit;font-weight:600;font-size:17px;border:0;border-radius:var(--r);padding:15px 18px;cursor:pointer;background:var(--ink);color:var(--bg);transition:transform .12s, opacity .12s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn.accent{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.block{width:100%}
+.link{font:inherit;font-size:15px;color:var(--accent);background:none;border:0;padding:6px 0;cursor:pointer;font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.msg{font-size:14px;color:var(--muted)}
+.msg.err{color:var(--bad)}
+.spacer{flex:1}
+
+/* name stats */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--display);font-size:28px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;font-weight:700}
+.stat span{font-size:13px;color:var(--muted)}
+.source{font-size:12px;color:var(--muted)}
+
+/* option picker */
+.pick{display:flex;flex-direction:column;gap:10px}
+.pick-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.opts{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r);overflow:hidden}
+.opt{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:12px;padding:13px 14px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.opt:first-child{border-top:0}
+.opt .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line)}
+.opt[aria-checked=true]{background:color-mix(in srgb, var(--accent) 9%, transparent)}
+.opt[aria-checked=true] .dot{border-color:var(--accent);background:radial-gradient(var(--accent) 0 45%, transparent 50%)}
+.opt .nm{font-weight:600;min-width:0}
+.opt .sub{display:block;font-size:13px;color:var(--muted);font-weight:400}
+.opt .pop{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.opt .rel{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+
+/* share */
+.card{background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.matchup{display:flex;flex-direction:column;gap:2px}
+.matchup b{font-weight:600}
+.copyrow{display:flex;gap:8px}
+.copyrow input{font-size:14px;padding:12px}
+
+/* rounds */
+.progress{display:flex;gap:6px}
+.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--ink)}
+.vs{display:flex;flex-direction:column;gap:10px;position:relative}
+.vs-mid{align-self:center;font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin:-2px 0}
+.choice{font:inherit;color:var(--ink);background:var(--surface);border:2px solid transparent;border-radius:18px;padding:20px 18px;min-height:132px;display:flex;flex-direction:column;justify-content:center;gap:4px;text-align:left;cursor:pointer;transition:border-color .2s, background .2s, transform .12s}
+.choice:active{transform:scale(.985)}
+.choice:disabled{cursor:default;transform:none}
+.choice .big{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.02em}
+.choice .cap{color:var(--muted);font-size:15px}
+.choice .num{font-family:var(--display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums;margin-top:8px;letter-spacing:-.01em}
+.choice .num small{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);margin-left:6px;letter-spacing:0}
+.choice.right{border-color:var(--good);background:var(--good-bg)}
+.choice.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.choice.winner:not(.right):not(.wrong){border-color:var(--good)}
+.choice .tag{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px;margin-bottom:6px}
+.choice.right .tag{background:var(--good);color:var(--surface)}
+.choice.wrong .tag{background:var(--bad);color:var(--surface)}
+.verdict{font-size:15px;min-height:22px}
+.verdict.good{color:var(--good)} .verdict.bad{color:var(--bad)}
+
+/* results + leaderboard */
+.score{display:flex;align-items:baseline;gap:10px}
+.score b{font-family:var(--display);font-size:64px;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.score span{color:var(--muted);font-size:16px}
+.board{background:var(--surface);border-radius:var(--r);overflow:hidden}
+.row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.me{background:color-mix(in srgb, var(--accent) 8%, transparent)}
+.row .rk{color:var(--muted);font-variant-numeric:tabular-nums;font-size:14px}
+.row .who{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .picks{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.no{background:var(--bad-bg);color:var(--bad)}
+.row .pts{font-family:var(--display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.empty{padding:16px;color:var(--muted);font-size:14px}
+.answers{display:flex;flex-direction:column;gap:8px}
+.ans{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:12px 14px;background:var(--surface);border-radius:var(--r)}
+.ans span:last-child{font-weight:600;white-space:nowrap}
+.ans .ok{color:var(--good)} .ans .no{color:var(--bad)}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ink);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;text-align:center;padding-block:40px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.sugs{display:flex;flex-wrap:wrap;gap:8px}
+.sugs:empty{display:none}
+.chip{font:inherit;font-size:15px;font-weight:600;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.sharerow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="brand" id="brand" type="button" aria-label="How Many of You?, start a new game"><i></i>How Many of You?</button>
+    <small id="who"></small>
+  </header>
+
+  <!-- CREATE -->
+  <section class="view" id="v-create" hidden>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h1>Is your name bigger than a city?</h1>
+      <p class="lede">Pick a first name. We'll find places with about as many people, and you choose the matchups your friends have to guess.</p>
+    </div>
+    <form class="field" id="name-form" autocomplete="off">
+      <input type="text" id="name-input" placeholder="First name, e.g. David" maxlength="30" autocapitalize="words" enterkeyhint="search" aria-label="First name">
+      <button class="btn" id="find-btn" type="submit">Find</button>
+    </form>
+    <p class="msg" id="find-msg"></p>
+    <div class="sugs" id="find-sug"></div>
+
+    <div id="picker" hidden style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="stats">
+          <div class="stat"><span>In the US</span><b id="st-us"></b><span id="st-us-r"></span></div>
+          <div class="stat"><span>Worldwide</span><b id="st-world"></b><span id="st-world-r"></span></div>
+        </div>
+        <p class="source" id="st-src"></p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><h2 id="us-head">Round 1 · In the US</h2><button class="link" type="button" id="us-more">Other places</button></div>
+        <p class="msg" id="us-hint"></p>
+        <div class="opts" id="us-opts" role="radiogroup" aria-labelledby="us-head"></div>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><h2 id="w-head">Round 2 · Worldwide</h2><button class="link" type="button" id="w-more">Other places</button></div>
+        <p class="msg" id="w-hint"></p>
+        <div class="opts" id="w-opts" role="radiogroup" aria-labelledby="w-head"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn accent block" id="create-btn" type="button" disabled>Create game link</button>
+        <p class="msg" id="create-msg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHARE -->
+  <section class="view" id="v-share" hidden>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="eyebrow">Game ready</p>
+      <h1 id="share-title"></h1>
+      <p class="lede">Send this link. Friends enter their name, make two guesses, and land on the leaderboard.</p>
+    </div>
+    <div class="card">
+      <input type="text" id="share-url" readonly aria-label="Game link">
+      <div class="sharerow">
+        <button class="btn accent" id="share-btn" type="button">Share…</button>
+        <button class="btn" id="copy-btn" type="button">Copy</button>
+      </div>
+      <p class="msg" id="copy-msg"></p>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Your matchups</p>
+      <div class="matchup"><b id="share-m1"></b><span class="msg" id="share-m1b"></span></div>
+      <div class="matchup"><b id="share-m2"></b><span class="msg" id="share-m2b"></span></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost block" id="share-board" type="button">See the leaderboard</button>
+    <button class="btn block" id="share-new" type="button">Create another game</button>
+  </section>
+
+  <!-- LOADING / ERROR -->
+  <section class="view" id="v-status" hidden>
+    <div class="center">
+      <div class="spin" id="status-spin"></div>
+      <h2 id="status-title">Loading game…</h2>
+      <p class="lede" id="status-text"></p>
+      <button class="btn" id="status-btn" type="button" hidden>Start a new game</button>
+    </div>
+  </section>
+
+  <!-- JOIN -->
+  <section class="view" id="v-join" hidden>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="eyebrow">You've been challenged</p>
+      <h1 id="join-title"></h1>
+      <p class="lede">Two rounds. Each time, tap whichever group you think has more people.</p>
+    </div>
+    <form id="join-form" style="display:flex;flex-direction:column;gap:10px" autocomplete="off">
+      <input type="text" id="player-input" placeholder="Your name" maxlength="24" autocapitalize="words" enterkeyhint="go" aria-label="Your name">
+      <button class="btn accent block" id="join-btn" type="submit" disabled>Start</button>
+    </form>
+    <p class="msg" id="join-msg"></p>
+  </section>
+
+  <!-- ROUND -->
+  <section class="view" id="v-round" hidden>
+    <div class="progress"><i id="pg1"></i><i id="pg2"></i></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <p class="eyebrow" id="round-label"></p>
+      <h1 id="round-q">Which is bigger?</h1>
+    </div>
+    <div class="vs">
+      <button class="choice" id="ch-a" type="button"></button>
+      <span class="vs-mid">VS</span>
+      <button class="choice" id="ch-b" type="button"></button>
+    </div>
+    <p class="verdict" id="verdict" aria-live="polite"></p>
+    <div class="spacer"></div>
+    <button class="btn block" id="next-btn" type="button" hidden>Next round</button>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="view" id="v-results" hidden>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <p class="eyebrow" id="res-eyebrow">Your score</p>
+      <div class="score"><b id="res-score"></b><span id="res-label"></span></div>
+    </div>
+    <div class="answers" id="res-answers"></div>
+    <p class="msg" id="res-msg"></p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="pick-head"><h2>Leaderboard</h2><span class="msg" id="lb-count"></span></div>
+      <div class="board" id="board"><div class="empty">Loading scores…</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn accent block" id="res-new" type="button">Start a new game</button>
+  </section>
+</div>
+
+<script src="/config.js"></script>
+<script>
+const NAMES=[["Maria",750000,60082000],["Mohammed",60000,45663000],["Jose",650000,29946000],["Muhammad",55000,26432000],["Mohamed",40000,24518000],["Wei",35000,17155000],["Ahmed",45000,14916000],["Ali",75000,14768000],["John",4300000,13173000],["Li",30000,13166000],["David",3600000,12429000],["Ana",220000,12091000],["Michael",4400000,11472000],["Anna",550000,11312000],["Juan",450000,11214000],["Jean",380000,10681000],["Mary",2900000,10555000],["Daniel",2000000,10026000],["Luis",420000,9757000],["Carlos",420000,9619000],["Robert",4300000,9494000],["Joseph",2500000,9098000],["James",4500000,8808000],["Antonio",300000,8659000],["Elena",110000,8516000],["Marie",220000,7653000],["Peter",450000,7469000],["Fatima",25000,7253000],["Richard",2400000,7056000],["Paul",1200000,6916000],["Olga",60000,6541000],["Pedro",170000,6436000],["William",3500000,6312000],["Thomas",2200000,6038000],["Elizabeth",1450000,6026000],["Patricia",1450000,5612000],["Hassan",25000,5526000],["Sandra",750000,5315000],["Miguel",280000,5108000],["Samuel",650000,5008000],["Charles",2000000,4949000],["Sarah",1050000,4826000],["Mark",1350000,4592000],["Patrick",600000,4267000],["Christine",450000,4084000],["Laura",650000,4071000],["Linda",1350000,4058000],["Andrea",420000,4010000],["George",1050000,3950000],["Ivan",110000,3894000],["Alexander",700000,3890000],["Martha",260000,3846000],["Susan",1050000,3767000],["Sara",320000,3765000],["Angela",620000,3732000],["Eric",850000,3672000],["Diana",260000,3554000],["Andrew",1250000,3499000],["Christian",450000,3428000],["Omar",110000,3423000],["Jennifer",1450000,3415000],["Gloria",230000,3346000],["Teresa",330000,3328000],["Grace",300000,3258000],["Gabriel",380000,3238000],["Barbara",1150000,3226000],["Stephen",800000,3054000],["Karen",950000,3049000],["Brian",1150000,3027000],["Christopher",2100000,3026000],["Ruth",250000,2929000],["Catherine",400000,2910000],["Anthony",1450000,2869000],["Nancy",850000,2854000],["Steven",1300000,2781000],["Adam",550000,2772000],["Victoria",420000,2704000],["Kevin",1150000,2688000],["Frank",550000,2637000],["Julia",330000,2634000],["Ronald",1050000,2612000],["Walter",350000,2494000],["Lisa",950000,2485000],["Marco",90000,2455000],["Pierre",25000,2400000],["Edward",950000,2352000],["Albert",280000,2346000],["Roger",350000,2342000],["Joyce",280000,2334000],["Margaret",750000,2317000],["Matthew",1650000,2311000],["Jessica",1100000,2301000],["Lucia",50000,2298000],["Jacqueline",320000,2276000],["Benjamin",750000,2246000],["Rebecca",650000,2234000],["Alice",230000,2231000],["Janet",380000,2189000],["Sharon",580000,2187000],["Aisha",30000,2166000],["Jonathan",850000,2164000],["Kenneth",1100000,2137000],["Helen",330000,2125000],["Betty",450000,2077000],["Henry",450000,2076000],["Joshua",1250000,2055000],["Lucas",380000,2054000],["Pablo",90000,2028000],["Raj",25000,2019000],["Michelle",820000,1984000],["Nicole",620000,1957000],["Giuseppe",9000,1938000],["Gary",850000,1929000],["Amanda",780000,1913000],["Carol",600000,1863000],["Raymond",550000,1838000],["Deborah",700000,1832000],["Julie",450000,1818000],["Judith",280000,1817000],["Donald",1250000,1802000],["Stephanie",780000,1799000],["Jason",1000000,1765000],["Cynthia",600000,1736000],["Brenda",530000,1686000],["Scott",750000,1674000],["Christina",470000,1668000],["Denise",300000,1663000],["Joan",250000,1652000],["Virginia",260000,1639000],["Justin",750000,1631000],["Hans",10000,1629000],["Dennis",500000,1618000],["Donna",700000,1582000],["Emma",650000,1557000],["Kenji",6000,1554000],["Diego",230000,1553000],["Rachel",500000,1548000],["Vincent",280000,1541000],["Alan",300000,1523000],["Hiroshi",8000,1523000],["Evelyn",330000,1501000],["Max",110000,1500000],["Amy",650000,1485000],["Timothy",1050000,1483000],["Jerry",500000,1463000],["Ingrid",15000,1459000],["Gregory",650000,1430000],["Melissa",780000,1420000],["Jeffrey",950000,1418000],["Larry",700000,1417000],["Sofia",170000,1374000],["Shirley",300000,1365000],["Samantha",580000,1334000],["Katherine",600000,1320000],["Philip",260000,1309000],["Ryan",950000,1284000],["Mia",320000,1280000],["Arthur",300000,1218000],["Ashley",900000,1215000],["Charlotte",320000,1212000],["Aaron",550000,1210000],["Ethan",550000,1210000],["Pamela",500000,1203000],["Brandon",750000,1200000],["Francesco",10000,1199000],["Olivia",550000,1192000],["Ian",280000,1174000],["Douglas",450000,1161000],["Jacob",950000,1139000],["Gerald",320000,1138000],["Ann",280000,1132000],["Keith",400000,1062000],["Kelly",450000,1057000],["Nicholas",950000,1045000],["Emily",900000,1039000],["Sophia",470000,1034000],["Isabella",470000,1034000],["Arjun",45000,1020000],["Yuki",5000,1000000],["Jeremy",450000,990000],["Liam",380000,988000],["Kimberly",850000,974000],["Jack",500000,968000],["Lawrence",300000,946000],["Abigail",430000,946000],["Kathleen",550000,943000],["Hannah",480000,935000],["Jordan",420000,924000],["Tyler",650000,910000],["Lauren",470000,893000],["Diane",380000,879000],["Danielle",380000,874000],["Kyle",500000,850000],["Nathan",500000,843000],["Jesse",380000,836000],["Elijah",380000,836000],["Heather",520000,832000],["Dylan",400000,800000],["Joe",280000,786000],["Natalie",340000,782000],["Amelia",240000,768000],["Megan",420000,756000],["Theresa",250000,745000],["Sean",420000,731000],["Carl",330000,726000],["Luke",320000,704000],["Debra",500000,700000],["Erik",110000,700000],["Lily",230000,690000],["Ella",230000,690000],["Noah",500000,689000],["Logan",380000,684000],["Austin",420000,672000],["Bryan",350000,666000],["Amber",360000,648000],["Cheryl",340000,646000],["Terry",350000,636000],["Harold",280000,616000],["Bruce",280000,616000],["Oliver",280000,616000],["Janice",270000,611000],["Mason",380000,608000],["Carolyn",380000,608000],["Randy",270000,605000],["Dmitri",6000,600000],["Alexis",340000,578000],["Judy",240000,568000],["Billy",300000,540000],["Priya",20000,514000],["Leo",140000,510000],["Aiden",280000,504000],["Roy",220000,484000],["Russell",220000,484000],["Connor",280000,476000],["Wayne",250000,475000],["Zachary",450000,473000],["Brittany",380000,456000],["Kathryn",320000,450000],["Owen",300000,443000],["Madison",420000,441000],["Bradley",270000,432000],["Kayla",330000,429000],["Ava",380000,413000],["Bobby",250000,400000],["Evan",320000,398000],["Ralph",180000,396000],["Eugene",180000,396000],["Lori",300000,371000],["Marilyn",200000,360000],["Frances",160000,358000],["Beverly",230000,337000],["Hunter",320000,336000],["Chloe",270000,331000],["Zoe",190000,314000],["Willie",230000,299000],["Sven",4000,290000],["Jake",160000,240000],["Lars",12000,220000],["Harper",170000,178000],["Anders",9000,175000],["Astrid",6000,150000]];
+// [name, population, kind, detail]  kind: c = US city, s = US state, n = country/territory, w = world city
+// Approximate 2023–2024 estimates (US Census Bureau, UN World Population Prospects, UN urban agglomerations)
+const PLACES=[
+["New York City",8260000,"c","NY"],["Los Angeles",3820000,"c","CA"],["Chicago",2660000,"c","IL"],["Houston",2310000,"c","TX"],
+["Phoenix",1650000,"c","AZ"],["Philadelphia",1550000,"c","PA"],["San Antonio",1500000,"c","TX"],["San Diego",1390000,"c","CA"],
+["Dallas",1300000,"c","TX"],["Jacksonville",990000,"c","FL"],["Austin",980000,"c","TX"],["Fort Worth",980000,"c","TX"],
+["San Jose",970000,"c","CA"],["Columbus",910000,"c","OH"],["Charlotte",900000,"c","NC"],["Indianapolis",880000,"c","IN"],
+["San Francisco",810000,"c","CA"],["Seattle",760000,"c","WA"],["Denver",720000,"c","CO"],["Oklahoma City",700000,"c","OK"],
+["Nashville",690000,"c","TN"],["Washington, D.C.",680000,"c","DC"],["El Paso",680000,"c","TX"],["Las Vegas",660000,"c","NV"],
+["Boston",650000,"c","MA"],["Detroit",630000,"c","MI"],["Portland",630000,"c","OR"],["Louisville",620000,"c","KY"],
+["Memphis",610000,"c","TN"],["Baltimore",570000,"c","MD"],["Milwaukee",560000,"c","WI"],["Albuquerque",560000,"c","NM"],
+["Tucson",550000,"c","AZ"],["Fresno",545000,"c","CA"],["Sacramento",530000,"c","CA"],["Atlanta",510000,"c","GA"],
+["Kansas City",510000,"c","MO"],["Colorado Springs",490000,"c","CO"],["Omaha",485000,"c","NE"],["Raleigh",480000,"c","NC"],
+["Miami",455000,"c","FL"],["Virginia Beach",455000,"c","VA"],["Long Beach",450000,"c","CA"],["Oakland",435000,"c","CA"],
+["Minneapolis",425000,"c","MN"],["Tulsa",412000,"c","OK"],["Tampa",400000,"c","FL"],["New Orleans",365000,"c","LA"],
+["Cleveland",362000,"c","OH"],["Honolulu",345000,"c","HI"],["Anaheim",340000,"c","CA"],["Orlando",320000,"c","FL"],
+["Lexington",320000,"c","KY"],["Pittsburgh",303000,"c","PA"],["Cincinnati",311000,"c","OH"],["St. Paul",303000,"c","MN"],
+["Jersey City",292000,"c","NJ"],["Anchorage",286000,"c","AK"],["Madison",280000,"c","WI"],["St. Louis",280000,"c","MO"],
+["Buffalo",275000,"c","NY"],["Reno",273000,"c","NV"],["Boise",237000,"c","ID"],["Richmond",230000,"c","VA"],
+["Spokane",229000,"c","WA"],["Salt Lake City",210000,"c","UT"],["Des Moines",210000,"c","IA"],["Birmingham",196000,"c","AL"],
+["Providence",190000,"c","RI"],["Knoxville",195000,"c","TN"],["Chattanooga",187000,"c","TN"],["Fort Lauderdale",183000,"c","FL"],
+["Eugene",178000,"c","OR"],["Charleston",155000,"c","SC"],["Savannah",148000,"c","GA"],["Syracuse",145000,"c","NY"],
+["Dayton",136000,"c","OH"],["Ann Arbor",121000,"c","MI"],["Cambridge",118000,"c","MA"],["Berkeley",119000,"c","CA"],
+["Green Bay",107000,"c","WI"],["Boulder",105000,"c","CO"],["Burbank",105000,"c","CA"],["Asheville",95000,"c","NC"],
+["Santa Fe",89000,"c","NM"],["Santa Barbara",88000,"c","CA"],["Napa",78000,"c","CA"],["Flagstaff",77000,"c","AZ"],
+["Missoula",77000,"c","MT"],["Portland",68000,"c","ME"],["Palo Alto",67000,"c","CA"],["Hoboken",58000,"c","NJ"],
+["Bozeman",56000,"c","MT"],["Palm Springs",45000,"c","CA"],["Burlington",44000,"c","VT"],["Annapolis",40000,"c","MD"],
+["Juneau",32000,"c","AK"],["Ithaca",32000,"c","NY"],["Beverly Hills",31000,"c","CA"],["Princeton",31000,"c","NJ"],
+["Key West",25000,"c","FL"],["Nantucket",14000,"c","MA"],["Jackson",10700,"c","WY"],["Malibu",10000,"c","CA"],
+["Sedona",9700,"c","AZ"],["Park City",8400,"c","UT"],["Montpelier",8000,"c","VT"],["Aspen",7000,"c","CO"],
+["Bar Harbor",5500,"c","ME"],["Telluride",2600,"c","CO"],
+["California",39400000,"s",""],["Texas",31300000,"s",""],["Florida",23400000,"s",""],["New York",19900000,"s",""],
+["Pennsylvania",13100000,"s",""],["Illinois",12700000,"s",""],["Ohio",11900000,"s",""],["Georgia",11200000,"s",""],
+["North Carolina",11000000,"s",""],["Michigan",10100000,"s",""],["New Jersey",9500000,"s",""],["Virginia",8800000,"s",""],
+["Washington",8000000,"s",""],["Arizona",7600000,"s",""],["Tennessee",7200000,"s",""],["Massachusetts",7100000,"s",""],
+["Indiana",6900000,"s",""],["Maryland",6300000,"s",""],["Missouri",6200000,"s",""],["Wisconsin",5960000,"s",""],
+["Colorado",5960000,"s",""],["Minnesota",5790000,"s",""],["South Carolina",5480000,"s",""],["Alabama",5160000,"s",""],
+["Louisiana",4600000,"s",""],["Kentucky",4590000,"s",""],["Oregon",4270000,"s",""],["Oklahoma",4100000,"s",""],
+["Connecticut",3680000,"s",""],["Utah",3500000,"s",""],["Nevada",3270000,"s",""],["Iowa",3240000,"s",""],
+["Arkansas",3090000,"s",""],["Kansas",2970000,"s",""],["Mississippi",2940000,"s",""],["New Mexico",2130000,"s",""],
+["Idaho",2000000,"s",""],["Nebraska",1990000,"s",""],["West Virginia",1770000,"s",""],["Hawaii",1450000,"s",""],
+["New Hampshire",1410000,"s",""],["Maine",1405000,"s",""],["Montana",1140000,"s",""],["Rhode Island",1110000,"s",""],
+["Delaware",1050000,"s",""],["South Dakota",925000,"s",""],["North Dakota",800000,"s",""],["Alaska",740000,"s",""],
+["Vermont",648000,"s",""],["Wyoming",588000,"s",""],
+["India",1450000000,"n",""],["China",1410000000,"n",""],["United States",340000000,"n",""],["Indonesia",283000000,"n",""],
+["Pakistan",251000000,"n",""],["Nigeria",233000000,"n",""],["Brazil",212000000,"n",""],["Bangladesh",174000000,"n",""],
+["Russia",144000000,"n",""],["Ethiopia",132000000,"n",""],["Mexico",131000000,"n",""],["Japan",124000000,"n",""],
+["Egypt",116000000,"n",""],["Philippines",115000000,"n",""],["DR Congo",109000000,"n",""],["Vietnam",101000000,"n",""],
+["Iran",91000000,"n",""],["Turkey",87000000,"n",""],["Germany",84000000,"n",""],["Thailand",72000000,"n",""],
+["United Kingdom",69000000,"n",""],["Tanzania",68000000,"n",""],["France",66000000,"n",""],["South Africa",64000000,"n",""],
+["Italy",59000000,"n",""],["Kenya",56000000,"n",""],["Myanmar",54000000,"n",""],["Colombia",53000000,"n",""],
+["South Korea",51700000,"n",""],["Uganda",50000000,"n",""],["Spain",48000000,"n",""],["Algeria",46800000,"n",""],
+["Iraq",46000000,"n",""],["Argentina",45700000,"n",""],["Afghanistan",42600000,"n",""],["Canada",41000000,"n",""],
+["Poland",38500000,"n",""],["Morocco",38000000,"n",""],["Ukraine",37000000,"n",""],["Uzbekistan",36400000,"n",""],
+["Malaysia",35600000,"n",""],["Saudi Arabia",33900000,"n",""],["Peru",34200000,"n",""],["Ghana",34400000,"n",""],
+["Nepal",29600000,"n",""],["Venezuela",28400000,"n",""],["Australia",27200000,"n",""],["North Korea",26500000,"n",""],
+["Taiwan",23400000,"n",""],["Sri Lanka",21900000,"n",""],["Chile",19800000,"n",""],["Romania",19000000,"n",""],
+["Kazakhstan",20600000,"n",""],["Netherlands",18000000,"n",""],["Ecuador",18100000,"n",""],["Guatemala",18400000,"n",""],
+["Cambodia",17600000,"n",""],["Zimbabwe",16600000,"n",""],["Bolivia",12400000,"n",""],["Tunisia",12300000,"n",""],
+["Belgium",11800000,"n",""],["Haiti",11800000,"n",""],["Jordan",11500000,"n",""],["Dominican Republic",11400000,"n",""],
+["Cuba",10900000,"n",""],["Czechia",10900000,"n",""],["Sweden",10600000,"n",""],["Portugal",10400000,"n",""],
+["Greece",10300000,"n",""],["Israel",9900000,"n",""],["Hungary",9600000,"n",""],["Austria",9100000,"n",""],
+["Switzerland",8900000,"n",""],["Laos",7800000,"n",""],["Paraguay",6900000,"n",""],["Serbia",6600000,"n",""],
+["Bulgaria",6400000,"n",""],["El Salvador",6300000,"n",""],["Denmark",5980000,"n",""],["Singapore",5900000,"n",""],
+["Finland",5600000,"n",""],["Norway",5550000,"n",""],["Slovakia",5500000,"n",""],["Ireland",5300000,"n",""],
+["New Zealand",5250000,"n",""],["Costa Rica",5100000,"n",""],["Panama",4500000,"n",""],["Croatia",3860000,"n",""],
+["Georgia (country)",3800000,"n",""],["Mongolia",3500000,"n",""],["Uruguay",3400000,"n",""],["Puerto Rico",3200000,"n",""],
+["Bosnia and Herzegovina",3200000,"n",""],["Armenia",3000000,"n",""],["Lithuania",2890000,"n",""],["Qatar",2860000,"n",""],
+["Jamaica",2830000,"n",""],["Albania",2750000,"n",""],["Botswana",2500000,"n",""],["Slovenia",2120000,"n",""],
+["Latvia",1870000,"n",""],["North Macedonia",1800000,"n",""],["Bahrain",1600000,"n",""],["Trinidad and Tobago",1500000,"n",""],
+["Estonia",1370000,"n",""],["Cyprus",1360000,"n",""],["Mauritius",1270000,"n",""],["Fiji",930000,"n",""],
+["Bhutan",790000,"n",""],["Luxembourg",670000,"n",""],["Montenegro",620000,"n",""],["Malta",540000,"n",""],
+["Maldives",530000,"n",""],["Brunei",460000,"n",""],["Belize",420000,"n",""],["Bahamas",400000,"n",""],
+["Iceland",390000,"n",""],["Vanuatu",330000,"n",""],["Barbados",280000,"n",""],["Samoa",220000,"n",""],
+["Saint Lucia",180000,"n",""],["Seychelles",130000,"n",""],["Grenada",117000,"n",""],["Tonga",104000,"n",""],
+["Andorra",81000,"n",""],["Cayman Islands",69000,"n",""],["Bermuda",64000,"n",""],["Greenland",56000,"n",""],
+["Faroe Islands",54000,"n",""],["Liechtenstein",40000,"n",""],["Monaco",39000,"n",""],["San Marino",34000,"n",""],
+["Gibraltar",33000,"n",""],["Palau",18000,"n",""],["Tuvalu",11000,"n",""],["Vatican City",800,"n",""],
+["Tokyo",37100000,"w","Japan"],["Delhi",33800000,"w","India"],["Shanghai",29900000,"w","China"],["Dhaka",23900000,"w","Bangladesh"],
+["São Paulo",22800000,"w","Brazil"],["Mexico City",22500000,"w","Mexico"],["Cairo",22600000,"w","Egypt"],["Beijing",22100000,"w","China"],
+["Mumbai",21700000,"w","India"],["Osaka",19000000,"w","Japan"],["Karachi",17600000,"w","Pakistan"],["Kinshasa",17000000,"w","DR Congo"],
+["Lagos",16500000,"w","Nigeria"],["Istanbul",16000000,"w","Turkey"],["Buenos Aires",15600000,"w","Argentina"],["Kolkata",15500000,"w","India"],
+["Manila",14900000,"w","Philippines"],["Lahore",14400000,"w","Pakistan"],["Bangalore",14000000,"w","India"],["Rio de Janeiro",13800000,"w","Brazil"],
+["Moscow",12700000,"w","Russia"],["Bogotá",11500000,"w","Colombia"],["Jakarta",11400000,"w","Indonesia"],["Paris",11300000,"w","France"],
+["Lima",11300000,"w","Peru"],["Bangkok",11200000,"w","Thailand"],["Seoul",10000000,"w","South Korea"],["London",9600000,"w","UK"],
+["Tehran",9500000,"w","Iran"],["Ho Chi Minh City",9300000,"w","Vietnam"],["Riyadh",7900000,"w","Saudi Arabia"],["Hong Kong",7500000,"w","China"],
+["Santiago",6900000,"w","Chile"],["Madrid",6800000,"w","Spain"],["Toronto",6400000,"w","Canada"],["Johannesburg",6400000,"w","South Africa"],
+["Barcelona",5700000,"w","Spain"],["St. Petersburg",5600000,"w","Russia"],["Sydney",5300000,"w","Australia"],["Nairobi",5300000,"w","Kenya"],
+["Melbourne",5200000,"w","Australia"],["Cape Town",4800000,"w","South Africa"],["Rome",4300000,"w","Italy"],["Montreal",4300000,"w","Canada"],
+["Berlin",3700000,"w","Germany"],["Dubai",3600000,"w","UAE"],["Milan",3200000,"w","Italy"],["Athens",3200000,"w","Greece"],
+["Kyiv",3000000,"w","Ukraine"],["Lisbon",3000000,"w","Portugal"],["Vancouver",2700000,"w","Canada"],["Havana",2100000,"w","Cuba"],
+["Vienna",2000000,"w","Austria"],["Hamburg",1900000,"w","Germany"],["Warsaw",1860000,"w","Poland"],["Auckland",1700000,"w","New Zealand"],
+["Budapest",1700000,"w","Hungary"],["Munich",1500000,"w","Germany"],["Kyoto",1460000,"w","Japan"],["Copenhagen",1400000,"w","Denmark"],
+["Prague",1300000,"w","Czechia"],["Dublin",1300000,"w","Ireland"],["Brussels",1200000,"w","Belgium"],["Stockholm",990000,"w","Sweden"],
+["Amsterdam",930000,"w","Netherlands"],["Oslo",710000,"w","Norway"],["Helsinki",670000,"w","Finland"],["Edinburgh",530000,"w","UK"],
+["Tel Aviv",470000,"w","Israel"],["Zurich",440000,"w","Switzerland"],["Florence",360000,"w","Italy"],["Venice",250000,"w","Italy"],
+["Geneva",200000,"w","Switzerland"],["Oxford",160000,"w","UK"],["Salzburg",155000,"w","Austria"],["Reykjavík",140000,"w","Iceland"],
+["Bruges",120000,"w","Belgium"]
+];
+
+const CFG = window.HMOY_CONFIG || {};
+const US_POP = 340e6, WORLD_POP = 8.2e9;
+const $ = id => document.getElementById(id);
+
+/* ---------- formatting ---------- */
+function sig(n, d){ return Number(n.toPrecision(d)).toString(); }
+function fmt(n){
+  if (n >= 1e9) return sig(n/1e9, 3) + "B";
+  if (n >= 1e6) return sig(n/1e6, 3) + "M";
+  if (n >= 1e4) return sig(n/1e3, 3) + "K";
+  return Math.round(n).toLocaleString("en-US");
+}
+function fmtLong(n){
+  if (n >= 1e9) return sig(n/1e9, 3) + " billion";
+  if (n >= 1e6) return sig(n/1e6, 3) + " million";
+  return Math.round(n).toLocaleString("en-US");
+}
+function plural(name){ return /(s|x|z|ch|sh)$/i.test(name) ? "people named " + name : name + "s"; }
+function pluralCap(name){ const p = plural(name); return p[0].toUpperCase() + p.slice(1); }
+function oneIn(total, n){ const r = total / n; return r < 10 ? sig(r, 2) : Math.round(r).toLocaleString("en-US"); }
+const KIND = {c:"City", s:"US state", n:"Country", w:"City"};
+const STATE_NAMES = {NY:"New York",CA:"California",IL:"Illinois",TX:"Texas",AZ:"Arizona",PA:"Pennsylvania",FL:"Florida",OH:"Ohio",NC:"North Carolina",IN:"Indiana",WA:"Washington",CO:"Colorado",OK:"Oklahoma",TN:"Tennessee",DC:"District of Columbia",NV:"Nevada",MA:"Massachusetts",MI:"Michigan",OR:"Oregon",KY:"Kentucky",MD:"Maryland",WI:"Wisconsin",NM:"New Mexico",GA:"Georgia",MO:"Missouri",NE:"Nebraska",VA:"Virginia",MN:"Minnesota",LA:"Louisiana",HI:"Hawaii",NJ:"New Jersey",AK:"Alaska",ID:"Idaho",UT:"Utah",IA:"Iowa",AL:"Alabama",RI:"Rhode Island",SC:"South Carolina",MT:"Montana",ME:"Maine",VT:"Vermont",WY:"Wyoming"};
+function placeLabel(p){
+  if (p.k === "c") return p.d === "DC" ? "US capital" : "City in " + (STATE_NAMES[p.d] || p.d);
+  if (p.k === "w") return "City in " + p.d;
+  return KIND[p.k];
+}
+const PL = PLACES.map(([n,p,k,d]) => ({n, p, k, d}));
+const NAME_MAP = new Map(NAMES.map(([n,us,w]) => [n.toLowerCase(), {name:n, us, world:w}]));
+
+/* ---------- views ---------- */
+const VIEWS = ["create","share","status","join","round","results"];
+function show(v){
+  VIEWS.forEach(x => $("v-"+x).hidden = x !== v);
+  window.scrollTo(0,0);
+  if (v !== "results") stopBoard();
+}
+function status(title, text, showBtn){
+  $("status-title").textContent = title; $("status-text").textContent = text || "";
+  $("status-spin").hidden = !!showBtn; $("status-btn").hidden = !showBtn; show("status");
+}
+function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e){ return null; } }
+
+/* ---------- player identity (random id kept on this device) ---------- */
+let memId = null;
+function myId(){
+  let id = store("hmoy-id");
+  if (!id){
+    const b = new Uint32Array(4); crypto.getRandomValues(b);
+    id = "p" + Array.from(b, x => x.toString(36)).join("");
+    store("hmoy-id", id);
+    if (!store("hmoy-id")) { memId = memId || id; return memId; }
+  }
+  return id;
+}
+
+/* ---------- database (Supabase REST) ---------- */
+const configured = !!(CFG.supabaseUrl && CFG.supabaseKey && !/YOUR-/.test(CFG.supabaseUrl + CFG.supabaseKey));
+function headers(extra){
+  const h = {"apikey": CFG.supabaseKey, "Content-Type": "application/json", ...extra};
+  if (/^eyJ/.test(CFG.supabaseKey)) h["Authorization"] = "Bearer " + CFG.supabaseKey; // legacy anon keys
+  return h;
+}
+async function api(path, opts = {}){
+  if (!configured) throw Object.assign(new Error("not configured"), {code:"config"});
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const res = await fetch(CFG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/" + path, {...opts, headers: headers(opts.headers), signal: ctl.signal});
+    if (!res.ok) { const body = await res.text().catch(() => ""); throw Object.assign(new Error(body || res.statusText), {status: res.status}); }
+    const txt = await res.text();
+    return txt ? JSON.parse(txt) : null;
+  } finally { clearTimeout(t); }
+}
+const enc = encodeURIComponent;
+const getGame = id => api(`games?id=eq.${enc(id)}&select=*`).then(r => r[0] || null);
+const getMyPlay = id => api(`plays?game_id=eq.${enc(id)}&player_id=eq.${enc(myId())}&select=*`).then(r => r[0] || null);
+const getBoard = id => api(`plays?game_id=eq.${enc(id)}&select=player,player_id,us,world,us_ok,world_ok,score,created_at&order=score.desc,created_at.asc&limit=200`);
+
+function newId(){
+  const a = "abcdefghijkmnpqrstuvwxyz23456789", b = new Uint32Array(8); crypto.getRandomValues(b);
+  return "g" + Array.from(b, x => a[x % a.length]).join("");
+}
+function slug(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+function gameLink(id, name){ return location.origin + "/how-many-" + slug(plural(name)) + "-" + id; }
+
+/* ---------- CREATE ---------- */
+let draft = null, usPage = 0, wPage = 0, usSel = null, wSel = null;
+
+function normalizeName(raw){
+  return raw.trim().replace(/\s+/g," ").toLowerCase().replace(/(^|[\s'\-])\p{L}/gu, m => m.toUpperCase());
+}
+function lev(a, b){
+  const m = a.length, n = b.length; if (Math.abs(m - n) > 2) return 9;
+  let prev = Array.from({length:n+1}, (_, j) => j);
+  for (let i = 1; i <= m; i++){
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+function suggestions(name){
+  const q = name.toLowerCase();
+  return NAMES.map(r => r[0]).map(n => ({n, d: lev(q, n.toLowerCase())}))
+    .filter(x => x.d <= 2 || (q.length >= 3 && x.n.toLowerCase().startsWith(q)))
+    .sort((a,b) => a.d - b.d).slice(0, 4).map(x => x.n);
+}
+
+function optionsFor(n, page){
+  const scored = PL.filter(p => p.p !== n).map(p => ({...p, r: Math.log(p.p / n)}));
+  const above = scored.filter(p => p.r > 0).sort((a,b) => a.r - b.r);
+  const below = scored.filter(p => p.r < 0).sort((a,b) => b.r - a.r);
+  const pages = Math.max(1, Math.ceil(Math.max(above.length, below.length) / 4));
+  const pg = page % Math.min(pages, 4);
+  let list = [...above.slice(pg*4, pg*4+4), ...below.slice(pg*4, pg*4+4)];
+  if (list.length < 4) list = [...above.slice(0,8), ...below.slice(0,8)].sort((a,b)=>Math.abs(a.r)-Math.abs(b.r)).slice(0,8);
+  return list.sort((a,b) => b.p - a.p);
+}
+function relText(pop, n){
+  const pct = (pop / n - 1) * 100;
+  if (Math.abs(pct) < 1) return "about the same";
+  if (pct > 0) return pct >= 100 ? sig(pop/n, 2) + "× as many" : "+" + Math.round(pct) + "% bigger";
+  return Math.round(-pct) + "% smaller";
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function renderOpts(box, n, page, sel, onPick){
+  let list = optionsFor(n, page);
+  if (sel && !list.some(p => p.n === sel.n && p.k === sel.k)) list = [sel, ...list];
+  box.innerHTML = "";
+  list.forEach(p => {
+    const b = el("button", "opt"); b.type = "button"; b.setAttribute("role","radio");
+    b.setAttribute("aria-checked", sel && sel.n === p.n && sel.k === p.k ? "true" : "false");
+    const nm = el("span", "nm", p.n); nm.append(el("span", "sub", placeLabel(p)));
+    const pop = el("span", "pop", fmt(p.p)); pop.append(el("span", "rel", relText(p.p, n)));
+    b.append(el("span", "dot"), nm, pop);
+    b.onclick = () => onPick(p);
+    box.append(b);
+  });
+}
+function renderPicker(){
+  const d = draft;
+  $("st-us").textContent = fmt(d.us);
+  $("st-world").textContent = fmt(d.world);
+  $("st-us-r").textContent = "1 in " + oneIn(US_POP, d.us) + " Americans";
+  $("st-world-r").textContent = "1 in " + oneIn(WORLD_POP, d.world) + " people";
+  $("st-src").textContent = "Estimates of living people, built from Social Security birth records and Forebears name data.";
+  $("us-hint").textContent = `Pick a place to put up against ${fmt(d.us)} ${plural(d.name)} in the US.`;
+  $("w-hint").textContent = `Pick a place to put up against ${fmt(d.world)} ${plural(d.name)} worldwide.`;
+  renderOpts($("us-opts"), d.us, usPage, usSel, p => { usSel = p; renderPicker(); });
+  renderOpts($("w-opts"), d.world, wPage, wSel, p => { wSel = p; renderPicker(); });
+  $("create-btn").disabled = !(usSel && wSel);
+  $("create-btn").textContent = usSel && wSel ? "Create game link" : "Pick one place for each round";
+  $("picker").hidden = false;
+}
+function pickName(raw){
+  const msg = $("find-msg"), sug = $("find-sug");
+  sug.innerHTML = ""; msg.className = "msg"; msg.textContent = "";
+  if (!raw.trim()) { msg.textContent = "Type a first name to start."; msg.className = "msg err"; return; }
+  if (!/^\p{L}[\p{L}' -]*$/u.test(raw.trim())) { msg.textContent = "Use letters only, e.g. David or Anne-Marie."; msg.className = "msg err"; return; }
+  const name = normalizeName(raw);
+  const hit = NAME_MAP.get(name.toLowerCase());
+  if (!hit){
+    $("picker").hidden = true;
+    const s = suggestions(name);
+    msg.className = "msg err";
+    msg.textContent = `We don't have numbers for “${name}” yet.` + (s.length ? " Did you mean:" : " Try a more common spelling, or another name.");
+    s.forEach(n => { const b = el("button", "chip", n); b.type = "button"; b.onclick = () => { $("name-input").value = n; pickName(n); }; sug.append(b); });
+    return;
+  }
+  draft = hit; usPage = 0; wPage = 0; usSel = null; wSel = null;
+  renderPicker();
+  $("name-input").blur();
+}
+$("name-form").addEventListener("submit", e => { e.preventDefault(); pickName($("name-input").value); });
+$("us-more").onclick = () => { usPage++; renderPicker(); };
+$("w-more").onclick = () => { wPage++; renderPicker(); };
+
+$("create-btn").onclick = async () => {
+  if (!draft || !usSel || !wSel) return;
+  const btn = $("create-btn"), msg = $("create-msg");
+  btn.disabled = true; btn.textContent = "Creating…"; msg.className = "msg"; msg.textContent = "";
+  const strip = p => ({n:p.n, p:p.p, k:p.k, d:p.d});
+  const id = newId();
+  const row = {id, name: draft.name, us: draft.us, world: draft.world, us_place: strip(usSel), world_place: strip(wSel)};
+  try {
+    await api("games", {method:"POST", body: JSON.stringify(row), headers: {"Prefer":"return=minimal"}});
+  } catch(e){
+    btn.disabled = false; btn.textContent = "Create game link"; msg.className = "msg err";
+    msg.textContent = e.code === "config"
+      ? "This site isn't connected to its database yet. Add your Supabase details to config.js (see SETUP.md)."
+      : "Couldn't save the game. Check your connection and try again.";
+    return;
+  }
+  showShare(id, row);
+};
+
+/* ---------- SHARE ---------- */
+let shareId = null, shareGame = null;
+function shareText(g, id){ return `How many ${plural(g.name)} are there? Take a guess: ${gameLink(id, g.name)}`; }
+function showShare(id, g){
+  shareId = id; shareGame = g;
+  document.title = `How many ${plural(g.name)}?`;
+  $("share-title").textContent = `How many ${plural(g.name)}?`;
+  $("share-url").value = gameLink(id, g.name);
+  $("copy-msg").textContent = "";
+  $("share-m1").textContent = `${pluralCap(g.name)} in the US vs. ${g.us_place.n}`;
+  $("share-m1b").textContent = `${fmt(g.us)} vs. ${fmt(g.us_place.p)}`;
+  $("share-m2").textContent = `${pluralCap(g.name)} worldwide vs. ${g.world_place.n}`;
+  $("share-m2b").textContent = `${fmt(g.world)} vs. ${fmt(g.world_place.p)}`;
+  $("share-btn").hidden = !navigator.share;
+  try { history.pushState(null, "", "/how-many-" + slug(plural(g.name)) + "-" + id + "?made=1"); } catch(e){}
+  show("share");
+}
+$("share-btn").onclick = async () => {
+  try { await navigator.share({title: `How many ${plural(shareGame.name)}?`, text: `How many ${plural(shareGame.name)} are there? Take a guess:`, url: gameLink(shareId, shareGame.name)}); }
+  catch(e){ /* cancelled */ }
+};
+$("copy-btn").onclick = () => {
+  const inp = $("share-url"), msg = $("copy-msg"), text = shareText(shareGame, shareId);
+  const fallback = () => { inp.focus(); inp.select(); inp.setSelectionRange(0, 9999); msg.textContent = "Link selected. Copy it from the menu."; };
+  try {
+    navigator.clipboard.writeText(text).then(() => { msg.textContent = "Copied: “" + text + "”"; $("copy-btn").textContent = "Copied"; setTimeout(() => $("copy-btn").textContent = "Copy", 1600); }, fallback);
+  } catch(e){ fallback(); }
+};
+$("share-url").onfocus = e => e.target.select();
+$("share-board").onclick = () => openGame(shareId, {boardOnly:true});
+$("share-new").onclick = () => startNew();
+
+/* ---------- PLAY ---------- */
+let game = null, gameId = null, round = 0, picks = {}, playerName = "";
+async function openGame(id, opts = {}){
+  status("Loading game…", "");
+  let g = null;
+  try { g = await getGame(id); }
+  catch(e){
+    if (e.code === "config") status("Not set up yet", "This site isn't connected to its database. The owner needs to finish setup.", true);
+    else status("Couldn't load this game", "Check your connection and open the link again.", true);
+    return;
+  }
+  if (!g){ status("Game not found", "This link doesn't match a game. Ask the sender for a new link, or start your own.", true); return; }
+  game = g; gameId = id;
+  document.title = `How many ${plural(g.name)}?`;
+  if (opts.boardOnly){ showResults(null); return; }
+  let existing = null;
+  try { existing = await getMyPlay(id); } catch(e){}
+  if (existing){ playerName = existing.player; showResults(existing); return; }
+  $("join-title").textContent = `How many ${plural(g.name)} are out there?`;
+  $("player-input").value = store("hmoy-player") || "";
+  $("join-btn").disabled = !$("player-input").value.trim();
+  $("join-msg").textContent = "";
+  show("join");
+}
+$("player-input").addEventListener("input", e => $("join-btn").disabled = !e.target.value.trim());
+$("join-form").addEventListener("submit", e => {
+  e.preventDefault();
+  playerName = $("player-input").value.trim().slice(0, 24);
+  if (!playerName) return;
+  store("hmoy-player", playerName);
+  round = 0; picks = {}; startRound();
+});
+
+function roundInfo(i){
+  return i === 0
+    ? {key:"us", label:"Round 1 of 2 · In the US", nameCount:game.us, nameCap:"living in the US", place:game.us_place}
+    : {key:"world", label:"Round 2 of 2 · Worldwide", nameCount:game.world, nameCap:"living worldwide", place:game.world_place};
+}
+function fillChoice(btn, big, cap){
+  btn.className = "choice"; btn.disabled = false; btn.innerHTML = "";
+  btn.append(el("span", "big", big), el("span", "cap", cap));
+}
+function startRound(){
+  const r = roundInfo(round);
+  $("round-label").textContent = r.label;
+  $("pg1").className = "on"; $("pg2").className = round === 1 ? "on" : "";
+  $("verdict").textContent = ""; $("verdict").className = "verdict";
+  $("next-btn").hidden = true;
+  const flip = (gameId.charCodeAt(1 + round) % 2) === 1; // same layout for everyone in this game
+  const A = flip ? $("ch-b") : $("ch-a"), B = flip ? $("ch-a") : $("ch-b");
+  fillChoice(A, pluralCap(game.name), r.nameCap);
+  fillChoice(B, r.place.n, placeLabel(r.place));
+  A.dataset.side = "name"; B.dataset.side = "place";
+  [$("ch-a"), $("ch-b")].forEach(b => b.onclick = () => choose(b.dataset.side));
+  show("round");
+}
+function countUp(node, to, ms){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches){ node.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  const step = t => { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); node.textContent = fmt(Math.max(1, to * e)); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function choose(side){
+  const r = roundInfo(round);
+  const nameBig = r.nameCount > r.place.p;
+  const winner = nameBig ? "name" : "place";
+  const ok = side === winner;
+  picks[r.key] = side;
+  [$("ch-a"), $("ch-b")].forEach(b => {
+    b.disabled = true;
+    const isName = b.dataset.side === "name";
+    const num = el("span", "num"), v = el("span");
+    num.append(v, el("small", null, isName ? "people" : "residents"));
+    b.append(num); countUp(v, isName ? r.nameCount : r.place.p, 900);
+    if (b.dataset.side === winner) b.classList.add("winner");
+    if (b.dataset.side === side){
+      b.classList.add(ok ? "right" : "wrong");
+      b.prepend(el("span", "tag", ok ? "Correct" : "Wrong"));
+    }
+  });
+  const diff = fmtLong(Math.abs(r.nameCount - r.place.p));
+  setTimeout(() => {
+    $("verdict").className = "verdict " + (ok ? "good" : "bad");
+    $("verdict").textContent = (ok ? "Nice. " : "Not this time. ") + (nameBig
+      ? `${pluralCap(game.name)} outnumber ${r.place.n} by ${diff}.`
+      : `${r.place.n} is bigger by ${diff} people.`);
+    $("next-btn").textContent = round === 0 ? "Next round" : "See results";
+    $("next-btn").hidden = false;
+  }, 650);
+}
+function scorePicks(){
+  const usOk = picks.us === (game.us > game.us_place.p ? "name" : "place");
+  const worldOk = picks.world === (game.world > game.world_place.p ? "name" : "place");
+  return {us_ok: usOk, world_ok: worldOk, score: (usOk?1:0) + (worldOk?1:0)};
+}
+$("next-btn").onclick = async () => {
+  if (round === 0){ round = 1; startRound(); return; }
+  const local = {game_id: gameId, player_id: myId(), player: playerName, us: picks.us, world: picks.world};
+  $("next-btn").disabled = true;
+  let saved = null, ok = true;
+  try {
+    const r = await api("plays", {method:"POST", body: JSON.stringify(local), headers: {"Prefer":"return=representation"}});
+    saved = r && r[0];
+  } catch(e){
+    if (e.status === 409) { try { saved = await getMyPlay(gameId); } catch(_){} }
+    else ok = false;
+  }
+  $("next-btn").disabled = false;
+  showResults(saved || {...local, ...scorePicks()}, ok);
+};
+
+/* ---------- RESULTS + LEADERBOARD ---------- */
+let boardTimer = null;
+function stopBoard(){ if (boardTimer){ clearInterval(boardTimer); boardTimer = null; } }
+function pickLabel(side, which){
+  if (side === "name") return pluralCap(game.name);
+  return which === "us" ? game.us_place.n : game.world_place.n;
+}
+function showResults(play, saved = true){
+  const ans = $("res-answers"); ans.innerHTML = "";
+  if (play){
+    $("res-eyebrow").textContent = playerName ? playerName + ", your score" : "Your score";
+    $("res-score").textContent = play.score + "/2";
+    $("res-label").textContent = play.score === 2 ? "Perfect round." : play.score === 1 ? "One out of two." : "Tough one.";
+    [["In the US", play.us_ok, game.us, game.us_place], ["Worldwide", play.world_ok, game.world, game.world_place]].forEach(([lbl, ok, cnt, pl]) => {
+      const row = el("div", "ans");
+      row.append(el("span", null, `${lbl}: ${fmt(cnt)} ${plural(game.name)} vs. ${fmt(pl.p)} in ${pl.n}`), el("span", ok ? "ok" : "no", ok ? "✓ Right" : "✗ Wrong"));
+      ans.append(row);
+    });
+    $("res-msg").className = saved ? "msg" : "msg err";
+    $("res-msg").textContent = saved ? "" : "Your score couldn't be saved to the leaderboard. Check your connection.";
+  } else {
+    $("res-eyebrow").textContent = "Leaderboard";
+    $("res-score").textContent = "";
+    $("res-label").textContent = `How many ${plural(game.name)}?`;
+    $("res-msg").textContent = "";
+    [["In the US", game.us, game.us_place], ["Worldwide", game.world, game.world_place]].forEach(([lbl, cnt, pl]) => {
+      const row = el("div", "ans");
+      row.append(el("span", null, `${lbl}: ${pluralCap(game.name)} vs. ${pl.n}`), el("span", null, `${fmt(cnt)} vs. ${fmt(pl.p)}`));
+      ans.append(row);
+    });
+  }
+  show("results");
+  $("board").innerHTML = '<div class="empty">Loading scores…</div>';
+  const load = () => getBoard(gameId).then(renderBoard).catch(() => { if (!$("board").querySelector(".row")) $("board").innerHTML = '<div class="empty">Couldn\'t load scores. Reopen the link to try again.</div>'; });
+  load();
+  boardTimer = setInterval(() => { if (!document.hidden) load(); }, 6000);
+}
+function renderBoard(rows){
+  const box = $("board"); box.innerHTML = "";
+  $("lb-count").textContent = rows.length ? rows.length + (rows.length === 1 ? " player" : " players") : "";
+  if (!rows.length){ box.innerHTML = '<div class="empty">No one has played yet. Share the link to get the first guesses in.</div>'; return; }
+  let rank = 0, last = null;
+  rows.forEach((p, i) => {
+    if (p.score !== last){ rank = i + 1; last = p.score; }
+    const me = p.player_id === myId();
+    const row = el("div", "row" + (me ? " me" : ""));
+    const mid = el("div"); mid.style.minWidth = "0";
+    mid.append(el("div", "who", p.player + (me ? " (you)" : "")));
+    const pk = el("div", "picks");
+    pk.append(el("span", "pill " + (p.us_ok ? "ok" : "no"), "US: " + pickLabel(p.us, "us")),
+              el("span", "pill " + (p.world_ok ? "ok" : "no"), "World: " + pickLabel(p.world, "world")));
+    mid.append(pk);
+    row.append(el("span", "rk", rank), mid, el("span", "pts", p.score + "/2"));
+    box.append(row);
+  });
+}
+
+/* ---------- routing ---------- */
+function gameIdFromUrl(){
+  const m = location.pathname.match(/-(g[a-z0-9]{8})\/?$/) || location.hash.match(/(?:^#|-)(g[a-z0-9]{8})$/);
+  return m ? m[1] : null;
+}
+function startNew(){
+  game = null; gameId = null; document.title = "How Many of You?";
+  try { history.pushState(null, "", "/"); } catch(e){}
+  show("create");
+  setTimeout(() => $("name-input").focus({preventScroll:true}), 50);
+}
+$("brand").onclick = startNew;
+$("status-btn").onclick = startNew;
+$("res-new").onclick = startNew;
+function route(){
+  const id = gameIdFromUrl();
+  if (id){
+    if (/made=1/.test(location.search) && shareGame && shareId === id) show("share");
+    else openGame(id);
+  } else show("create");
+}
+window.addEventListener("popstate", route);
+window.addEventListener("hashchange", route);
+
+route();
+if (!$("v-create").hidden && !draft){ $("name-input").value = "David"; pickName("David"); }
+</script>
+</body>
+</html>
